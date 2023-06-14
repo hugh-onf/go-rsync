@@ -15,25 +15,26 @@ import (
 var copySubCmd string = "rsync"
 var defaultProgressInterval int64 = 1000
 
-func Exec() (error, *int64, string) {
+// Exec executes the copy sub command using the passed in args
+func Exec(args ...string) (*int64, string, error) {
 	// Check if copy command available
 	if !os_ext.IsCommandAvailable(copySubCmd) {
-		return fmt.Errorf("'%s' command not found, need to install it first", copySubCmd), nil, copySubCmd
+		return nil, copySubCmd, fmt.Errorf("'%s' command not found, need to install it first", copySubCmd)
 	}
 
 	// Hard code to rsync
 	// so 2nd arg is the source folder
 	// and 3rd arg is the dest folder
-	if len(os.Args) != 4 {
-		return fmt.Errorf("invalid args, should be `-ah SOURCE_DIR TARGET_DIR`, we expect at least one option flag"), nil, copySubCmd
+	if len(args) != 3 {
+		return nil, copySubCmd, fmt.Errorf("invalid args, should be `-ah SOURCE_DIR TARGET_DIR`, we expect at least one option flag")
 	}
-	copyFrom := os.Args[2]
-	copyTo := os.Args[3]
+	copyFrom := args[1]
+	copyTo := args[2]
 
 	// Start the progress bar
 	totalSize, err := os_ext.GetFolderSize(copyFrom)
 	if err != nil {
-		return fmt.Errorf("cannot get directory size of source path '%s'", copyFrom), nil, copySubCmd
+		return nil, copySubCmd, fmt.Errorf("cannot get directory size of source path '%s'", copyFrom)
 	}
 	// Partial copy may happen
 	partialSize, err := os_ext.GetFolderSize(copyTo)
@@ -54,12 +55,12 @@ func Exec() (error, *int64, string) {
 	defer bar.Exit()
 
 	// Pass all the args to copy sub command
-	cmd := exec.Command(copySubCmd, os.Args[1:]...)
+	cmd := exec.Command(copySubCmd, args...)
 
 	// Queue it
 	err = cmd.Start()
 	if err != nil {
-		return err, &copySize, copySubCmd
+		return &copySize, copySubCmd, err
 	}
 
 	go func() {
@@ -89,5 +90,5 @@ func Exec() (error, *int64, string) {
 		bar.Set64(copySize)
 	}
 
-	return err, &copySize, copySubCmd
+	return &copySize, copySubCmd, err
 }

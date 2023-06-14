@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	err, size, cmd := cmd.Exec()
+	size, cmd, err := cmd.ExecCurrentContext()
 	if err != nil {
 		fmt.Printf("\ncommand finished with error, %v. Check '%s' manual for help.\n", err, cmd)
 	} else {
