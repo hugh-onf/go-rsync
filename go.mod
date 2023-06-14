@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/markthree/go-get-folder-size v0.3.2
 	github.com/schollz/progressbar/v3 v3.13.1
+	golang.org/x/text v0.10.0
 )
 
 require (
